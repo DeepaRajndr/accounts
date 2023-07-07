@@ -18,6 +18,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.discovery.converters.Auto;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+
 @RestController
 public class AccountsController {
 
@@ -55,6 +58,7 @@ public class AccountsController {
     }
 
     @PostMapping("/myCustomerDetails")
+    @CircuitBreaker(name = "detailsForCustomerSupportApp", fallbackMethod = "myCustomerDetailsFallback")
     public CustomerDetails myCustomerDetails(@RequestBody Customer customer) {
         Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
         List<Loans> loans = loansFeignClient.getLoansDetails(customer);
@@ -64,6 +68,18 @@ public class AccountsController {
         customerDetails.setAccounts(accounts);
         customerDetails.setLoans(loans);
         customerDetails.setCards(cards);
+
+        return customerDetails;
+
+    }
+
+    public CustomerDetails myCustomerDetailsFallback(@RequestBody Customer customer, Throwable t) {
+        Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
+        List<Loans> loans = loansFeignClient.getLoansDetails(customer);
+
+        CustomerDetails customerDetails = new CustomerDetails();
+        customerDetails.setAccounts(accounts);
+        customerDetails.setLoans(loans);
 
         return customerDetails;
 
