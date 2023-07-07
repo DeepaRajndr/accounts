@@ -78,7 +78,7 @@ public class AccountsController {
 
     }
 
-    public CustomerDetails myCustomerDetails(@RequestHeader("dpr-correlation-id") String correlationid,
+    public CustomerDetails myCustomerDetailsFallback(@RequestHeader("dpr-correlation-id") String correlationid,
             @RequestBody Customer customer, Throwable t) {
         Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
         List<Loans> loans = loansFeignClient.getLoansDetails(correlationid, customer);
