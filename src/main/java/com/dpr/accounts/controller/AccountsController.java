@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.micrometer.core.annotation.Timed;
 
 @RestController
 public class AccountsController {
@@ -40,6 +41,7 @@ public class AccountsController {
     LoansFeignClient loansFeignClient;
 
     @PostMapping("/myAccount")
+    @Timed(value = "getAccountDetails.time", description = "Time taken to return Account Details")
     public Accounts getAccountDetails(@RequestBody Customer customer) {
 
         Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
